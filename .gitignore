@@ -1,0 +1,4 @@
+*.pyc
+build/
+sumtypes.egg-info/
+dist/
