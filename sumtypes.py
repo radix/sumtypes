@@ -64,6 +64,11 @@ def sumtype(klass):
     A class decorator that treats the class like a sum type.
 
     Constructors should be wrapped/decorated with :obj:`constructor`.
+
+    Note that this will overwrite ``__repr__``, ``__eq__``, and ``__ne__`` on
+    your objects. ``__init__`` is untouched, but it would be kind of weird to
+    make something a sum type *and* have an ``__init__``, so I recommend
+    against that.
     """
     def __repr__(inst):
         return "<%s.%s %r>" % (klass.__name__,
