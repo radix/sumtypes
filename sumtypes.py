@@ -87,7 +87,7 @@ def sumtype(klass):
         return not inst == other
     klass.__ne__ = __ne__
 
-    for k, v in vars(klass).iteritems():
+    for k, v in vars(klass).items():
         if type(v) is constructor:
             v.set_klass(klass)
             v.set_name(k)
