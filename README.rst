@@ -12,7 +12,9 @@ https://sumtypes.readthedocs.org/
 Example
 =======
 
-Decorate your classes to make them a sum type::
+Decorate your classes to make them a sum type:
+
+.. code:: python
 
     @sumtype
     class MyType(object):
@@ -24,26 +26,36 @@ Decorate your classes to make them a sum type::
             assert type(y) is int
             return (x, y)
 
-Then construct them by calling the constructors::
+Then construct them by calling the constructors:
+
+.. code:: python
 
     v = MyType.MyConstructor(1)
     v2 = MyType.AnotherConstructor('foo', 2)
 
-You can get the value from the tagged objects::
+You can get the value from the tagged objects:
+
+.. code:: python
 
     assert v.value == 1
     assert v2.value == ('foo', 2)
 
-The type of the tagged objects is the type you declared::
+The type of the tagged objects is the type you declared:
+
+.. code:: python
 
     assert type(v) is MyType
 
-You can also introspect the constructor used::
+You can also introspect the constructor used:
+
+.. code:: python
 
     assert v.constructor is MyType.MyConstructor
 
 And the tagged objects have equality semantics, which you can use to do pattern
-matching::
+matching:
+
+.. code:: python
 
     assert v == MyType.MyConstructor(1)
     assert v != MyType.MyConstructor(2)
