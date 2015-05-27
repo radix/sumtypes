@@ -79,13 +79,11 @@ def sumtype(klass):
     klass.__repr__ = __repr__
 
     def __eq__(inst, other):
-        print "__eq__", inst, other
         return (inst.constructor is other.constructor
                 and inst.value == other.value)
     klass.__eq__ = __eq__
 
     def __ne__(inst, other):
-        print "__ne__", inst, other
         return not inst == other
     klass.__ne__ = __ne__
 
