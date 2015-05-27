@@ -5,7 +5,9 @@ Decorate your classes to make them a sum type::
 
     @sumtype
     class MyType(object):
+
         MyConstructor = constructor(int)
+
         @constructor
         def AnotherConstructor(x, y):
             assert type(x) is str
