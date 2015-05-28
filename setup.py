@@ -14,6 +14,6 @@ setuptools.setup(
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
     ],
-    modules=['sumtypes'],
+    py_modules=['sumtypes'],
     install_requires=[],
 )
