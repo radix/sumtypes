@@ -3,7 +3,7 @@ import setuptools
 
 setuptools.setup(
     name="sumtypes",
-    version="0.1a1",
+    version="0.1a2",
     description="Sum Types, aka Tagged Unions, for Python",
     long_description=open('README.rst').read(),
     url="http://github.com/radix/sumtypes/",
