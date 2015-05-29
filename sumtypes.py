@@ -130,7 +130,7 @@ def sumtype(klass):
     def __hash__(inst):
         # It's okay that the type isn't considered here, because dict lookups
         # also check equality, and equality checks the type.
-        return hash(_get_attrs(inst))
+        return hash(tuple(_get_attrs(inst)))
 
     klass.__hash__ = __hash__
 
