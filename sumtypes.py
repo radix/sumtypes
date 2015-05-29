@@ -22,7 +22,7 @@ Then construct them by calling the constructors::
     v = MyType.MyConstructor(1)
     v2 = MyType.AnotherConstructor('foo', 2)
 
-You can get the value from the tagged objects::
+You can get the values from the tagged objects::
 
     assert v.x == 1
     assert v2.x == 'foo'
@@ -37,7 +37,7 @@ type::
 
     assert isinstance(v, MyType)
 
-And the tagged objects have equality semantics::
+And the tagged objects support equality::
 
     assert v == MyType.MyConstructor(1)
     assert v != MyType.MyConstructor(2)

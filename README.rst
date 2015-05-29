@@ -18,9 +18,13 @@ Decorate your classes to make them a sum type:
 
     @sumtype
     class MyType(object):
-        MyConstructor = constructor(int)
 
-        @constructor
+        # constructors specify names for their arguments
+        MyConstructor = constructor('x')
+
+        # you can also use `constructor` as a decorator to write initializers /
+        # validators, which must return tuples corresponding to the arguments
+        @constructor('x', 'y')
         def AnotherConstructor(x, y):
             assert type(x) is str
             assert type(y) is int
@@ -33,32 +37,47 @@ Then construct them by calling the constructors:
     v = MyType.MyConstructor(1)
     v2 = MyType.AnotherConstructor('foo', 2)
 
-You can get the value from the tagged objects:
+You can get the values from the tagged objects:
 
 .. code:: python
 
-    assert v.value == 1
-    assert v2.value == ('foo', 2)
+    assert v.x == 1
+    assert v2.x == 'foo'
+    assert v2.y == 2
 
-The type of the tagged objects is the type you declared:
-
-.. code:: python
-
-    assert type(v) is MyType
-
-You can also introspect the constructor used:
+You check the constructor used:
 
 .. code:: python
 
-    assert v.constructor is MyType.MyConstructor
+    assert type(v) is MyType.MyConstructor
 
-And the tagged objects have equality semantics, which you can use to do pattern
-matching:
+And, like Scala case classes, the constructor type is a subclass of the main
+type:
+
+.. code:: python
+
+    assert isinstance(v, MyType)
+
+And the tagged objects support equality:
 
 .. code:: python
 
     assert v == MyType.MyConstructor(1)
     assert v != MyType.MyConstructor(2)
+
+Simple pattern matching is also supported. To write a function over all the
+cases of a sum type:
+
+.. code:: python
+
+    @match
+    class get_number(object):
+        def MyConstructor(x): return x
+        def AnotherConstructor(x, y): return y
+
+``match`` ensures that all cases are handled. If you really want to write a
+'partial function' (i.e. one that doesn't cover all cases), use
+``match_partial``.
 
 
 See Also
