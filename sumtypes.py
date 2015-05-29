@@ -55,7 +55,14 @@ cases of a sum type::
 :func:`match_partial`.
 """
 
-from itertools import izip_longest
+import sys
+
+PY3 = sys.version_info[0] == 3
+
+try:
+    from itertools import izip_longest
+except ImportError:
+    from itertools import zip_longest as izip_longest
 
 
 class _Constructor(object):
@@ -200,7 +207,10 @@ def _matchit(klass):
         handler = getattr(klass, cname, None)
         if handler is None:
             raise PartialMatchError([cname])
-        case = getattr(klass, cname).im_func
+        if PY3:
+            case = handler
+        else:
+            case = handler.im_func
         args = _get_attrs(value)
         return case(*args)
 
