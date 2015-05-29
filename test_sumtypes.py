@@ -5,7 +5,7 @@ from pytest import fixture, raises
 import attr
 
 from sumtypes import (
-    PartialMatchError, attrib, constructor, match, match_partial, sumtype)
+    PartialMatchError, constructor, match, match_partial, sumtype)
 
 
 @sumtype
@@ -29,8 +29,8 @@ def values():
 def test_repr(values):
     """representation shows the type, constructor, and values."""
     v, v2 = values
-    assert repr(v) == '<MyType.MyConstructor(3,)>'
-    assert repr(v2) == "<MyType.AnotherConstructor('something', 1)>"
+    assert repr(v) == 'MyType.MyConstructor(x=3)'
+    assert repr(v2) == "MyType.AnotherConstructor(x='something', y=1)"
 
 
 def test_type(values):
@@ -172,6 +172,6 @@ def test_honor_attrs_repr_flag():
 
     @sumtype
     class T(object):
-        X = constructor(attrib('val', repr=False))
+        X = constructor(('val', attr.ib(repr=False)))
 
-    assert repr(T.X(3)) == '<T.X()>'
+    assert repr(T.X(3)) == 'T.X()'

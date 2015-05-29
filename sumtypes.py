@@ -5,13 +5,14 @@ Decorate your classes to make them a sum type::
 
     @sumtype
     class MyType(object):
-
         # constructors specify names for their arguments
         MyConstructor = constructor('x')
-
-        # you can also use `constructor` as a decorator to write initializers /
-        # validators, which must return tuples corresponding to the arguments
         AnotherConstructor = constructor('x', 'y')
+
+        # You can also make use of any feature of the excellent `attribs`_
+        # package by using attr.ib instances in constructors
+        ThirdConstructor = constructor(
+            ('one', attr.ib(default=42)))
 
 Then construct them by calling the constructors::
 
@@ -117,19 +118,10 @@ def sumtype(klass):
 
 def _make_constructor(name, type_, attrs):
     """Create a type specific to the constructor."""
-    # We override the repr so that the main type is shown
-    def __repr__(inst):
-        attrs_with_repr = tuple(getattr(inst, attr[0])
-                                for attr in inst._sumtype_attribs
-                                if attr[1].repr)
-        return "<%s.%s%r>" % (type_.__name__,
-                              name,
-                              attrs_with_repr)
     d = dict(attrs)
     d['_sumtype_attribs'] = [x for x in attrs]
     t = type(name, (type_,), d)
-    t = attr.s(t)
-    t.__repr__ = __repr__
+    t = attr.s(t, repr_ns=type_.__name__)
     return t
 
 

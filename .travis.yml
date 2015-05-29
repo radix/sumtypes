@@ -8,6 +8,7 @@ python:
     - "pypy"
 install:
     - pip install -r dev-requirements.txt
+    - pip install .
     - pip install sphinx
 script:
     - make lint
