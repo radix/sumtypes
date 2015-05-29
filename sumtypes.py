@@ -173,12 +173,8 @@ def match(adt):
 
         @sumtype
         class MyType(object):
-            @constructor(['name', 'num'])
-            def NamedNum(name, num):
-                return (name, num)
-            @constructor(['num'])
-            def AnonymousNum(num):
-                return num
+            NamedNum = constructor('name', 'num')
+            AnonymousNum = constructor('num')
 
         @match(MyType)
         class get_num(object):
