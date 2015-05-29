@@ -18,17 +18,20 @@ Decorate your classes to make them a sum type:
 
     @sumtype
     class MyType(object):
-
         # constructors specify names for their arguments
         MyConstructor = constructor('x')
+        AnotherConstructor = constructor('x', 'y')
 
-        # you can also use `constructor` as a decorator to write initializers /
-        # validators, which must return tuples corresponding to the arguments
-        @constructor('x', 'y')
-        def AnotherConstructor(x, y):
-            assert type(x) is str
-            assert type(y) is int
-            return (x, y)
+        # You can also make use of any feature of the attrs
+        # package by using attr.ib in constructors
+        ThirdConstructor = constructor(
+            ('one', attr.ib(default=42)),
+            ('two', attr.ib(validator=attr.validators.instance_of(int))))
+
+(`attrs package`_, and `attr.ib documentation`_)
+
+.. _`attrs package`: https://pypi.python.org/pypi/attrs
+.. _`attr.ib documentation`: http://attrs.readthedocs.org/en/stable/api.html#attr.ib
 
 Then construct them by calling the constructors:
 
