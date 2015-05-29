@@ -18,7 +18,8 @@ Decorate your classes to make them a sum type::
 (`attrs package`_, and `attr.ib documentation`_)
 
 .. _`attrs package`: https://pypi.python.org/pypi/attrs
-.. _`attr.ib documentation`: http://attrs.readthedocs.org/en/stable/api.html#attr.ib
+.. _`attr.ib documentation`:
+   http://attrs.readthedocs.org/en/stable/api.html#attr.ib
 
 Then construct them by calling the constructors::
 
