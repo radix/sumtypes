@@ -80,11 +80,6 @@ def attrib(name, *args, **kwargs):
 class _Constructor(object):
     def __init__(self, attrs):
         self._attrs = attrs
-        self._func = None
-
-    def __call__(self, func):
-        self._func = func
-        return self
 
 
 def constructor(*argspec):
@@ -127,15 +122,14 @@ def sumtype(klass):
     """
     constructor_names = []
     for cname, constructor in _get_constructors(klass):
-        new_constructor = _make_constructor(cname, klass, constructor._func,
-                                            constructor._attrs)
+        new_constructor = _make_constructor(cname, klass, constructor._attrs)
         setattr(klass, cname, new_constructor)
         constructor_names.append(cname)
     klass._sumtype_constructor_names = constructor_names
     return klass
 
 
-def _make_constructor(name, type_, func, attrs):
+def _make_constructor(name, type_, attrs):
     """Create a type specific to the constructor."""
     # We override the repr so that the main type is shown
     def __repr__(inst):
