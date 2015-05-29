@@ -9,10 +9,16 @@ Decorate your classes to make them a sum type::
         MyConstructor = constructor('x')
         AnotherConstructor = constructor('x', 'y')
 
-        # You can also make use of any feature of the excellent `attribs`_
-        # package by using attr.ib instances in constructors
+        # You can also make use of any feature of the attrs
+        # package by using attr.ib in constructors
         ThirdConstructor = constructor(
-            ('one', attr.ib(default=42)))
+            ('one', attr.ib(default=42)),
+            ('two', attr.ib(validator=attr.validators.instance_of(int))))
+
+(`attrs package`_, and `attr.ib documentation`_)
+
+.. _`attrs package`: https://pypi.python.org/pypi/attrs
+.. _`attr.ib documentation`: http://attrs.readthedocs.org/en/stable/api.html#attr.ib
 
 Then construct them by calling the constructors::
 
@@ -74,7 +80,11 @@ def constructor(*argspec):
     Register a constructor for the parent sum type.
 
     :param argspec: each argument should be either a simple string indicating
-    the name of an attribute, or the result of :func:`attrib`.
+        the name of an attribute, or two-tuples of ``(name, attr.ib(...))``
+        where `attr.ib`_ is from the `attrs package`_.
+
+    .. _`attr.ib`:
+       http://attrs.readthedocs.org/en/stable/api.html#attr.ib
     """
     attrs = [(ib, attr.ib()) if not isinstance(ib, tuple) else ib
              for ib in argspec]
