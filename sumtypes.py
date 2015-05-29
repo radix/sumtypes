@@ -41,6 +41,18 @@ And the tagged objects have equality semantics::
 
     assert v == MyType.MyConstructor(1)
     assert v != MyType.MyConstructor(2)
+
+Simple pattern matching is also supported. To write a function over all the
+cases of a sum type::
+
+    @match
+    class get_number(object):
+        def MyConstructor(x): return x
+        def AnotherConstructor(x, y): return y
+
+:func:`match` ensures that all cases are handled. If you really want to write a
+'partial function' (i.e. one that doesn't cover all cases), use
+:func:`match_partial`.
 """
 
 from itertools import izip_longest
