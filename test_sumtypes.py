@@ -16,8 +16,8 @@ class MyType(object):
 
 @sumtype
 class AttrsType(object):
-    A = constructor(attrib('x', validator=attr.validators.instance_of(int)),
-                    attrib('y', validator=attr.validators.instance_of(str)))
+    A = constructor(('x', attr.ib(validator=attr.validators.instance_of(int))),
+                    ('y', attr.ib(validator=attr.validators.instance_of(str))))
 
 
 @fixture

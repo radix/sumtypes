@@ -63,20 +63,6 @@ except ImportError:
     from itertools import zip_longest as izip_longest
 
 
-def attrib(name, *args, **kwargs):
-    """
-    Specify an attribute with extra behavior.
-
-    This is just a simple wrapper around ``attr.ib`` from the ``attribs``
-    package, to allow specifying a name along with the attribute.
-
-    :param name: The name of the attribute
-    :param args: As per the ``attrib`` function from the ``attribs`` package.
-    :param kwargs: As per the ``attrib`` function from the ``attribs`` package.
-    """
-    return (name, attr.ib(*args, **kwargs))
-
-
 class _Constructor(object):
     def __init__(self, attrs):
         self._attrs = attrs
