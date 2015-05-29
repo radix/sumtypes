@@ -153,3 +153,21 @@ def test_no_conversion_constructors():
 
     l = List.Cons(1, List.Nil())
     assert l == List.Cons(1, List.Nil())
+
+
+def test_hash():
+    """Values are hashed based on their values, not identity."""
+    assert {MyType.MyConstructor(1): 2}[MyType.MyConstructor(1)] == 2
+
+
+def test_hash_counts_constructor():
+    """
+    Different values of the same type but same underlying representation do not
+    count as equivalent in dicts.
+    """
+    @sumtype
+    class T(object):
+        Nil = constructor()
+        Nil2 = constructor()
+
+    assert T.Nil2() not in {T.Nil(): 'foo'}

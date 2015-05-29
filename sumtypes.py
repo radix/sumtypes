@@ -127,6 +127,13 @@ def sumtype(klass):
         return not inst == other
     klass.__ne__ = __ne__
 
+    def __hash__(inst):
+        # It's okay that the type isn't considered here, because dict lookups
+        # also check equality, and equality checks the type.
+        return hash(_get_attrs(inst))
+
+    klass.__hash__ = __hash__
+
     constructor_names = []
     for cname, constructor in _get_constructors(klass):
         new_constructor = _make_constructor(cname, klass, constructor._func,
