@@ -6,9 +6,12 @@ Decorate your classes to make them a sum type::
     @sumtype
     class MyType(object):
 
-        MyConstructor = constructor(int)
+        # constructors specify names for their arguments
+        MyConstructor = constructor('x')
 
-        @constructor
+        # you can also use `constructor` as a decorator to write initializers /
+        # validators, which must return tuples corresponding to the arguments
+        @constructor('x', 'y')
         def AnotherConstructor(x, y):
             assert type(x) is str
             assert type(y) is int
@@ -21,44 +24,61 @@ Then construct them by calling the constructors::
 
 You can get the value from the tagged objects::
 
-    assert v.value == 1
-    assert v2.value == ('foo', 2)
+    assert v.x == 1
+    assert v2.x == 'foo'
+    assert v2.y == 2
 
-The type of the tagged objects is the type you declared::
+You check the constructor used::
 
-    assert type(v) is MyType
+    assert type(v) is MyType.MyConstructor
 
-You can also introspect the constructor used::
+And, like Scala case classes, the constructor type is a subclass of the main
+type::
 
-    assert v.constructor is MyType.MyConstructor
+    assert isinstance(v, MyType)
 
-And the tagged objects have equality semantics, which you can use to do pattern
-matching::
+And the tagged objects have equality semantics::
 
     assert v == MyType.MyConstructor(1)
     assert v != MyType.MyConstructor(2)
 """
 
+from itertools import izip_longest
 
-class constructor(object):
+
+class _Constructor(object):
+    def __init__(self, argspec):
+        self._argspec = argspec
+        self._func = None
+
+    def __call__(self, func):
+        self._func = func
+        return self
+
+
+def constructor(*argspec):
     """
     A wrapper/decorator to indicate that some callable is a constructor for the
     sum type that it's attached to.
     """
-    def __init__(self, callable_):
-        self.callable_ = callable_
+    return _Constructor(argspec)
 
-    def set_klass(self, klass):
-        self.klass = klass
 
-    def set_name(self, name):
-        self.name = name
+def _cmp_iterators(i1, i2):
+    sentinal = object()
+    return all(a == b for a, b in izip_longest(i1, i2, fillvalue=sentinal))
 
-    def __call__(self, *args, **kwargs):
-        obj = object.__new__(self.klass)
-        obj.value = self.callable_(*args, **kwargs)
-        obj.constructor = self
-        return obj
+
+def _get_attrs(obj):
+    if not obj._sumtype_argspec:
+        return ()
+    return (getattr(obj, attr) for attr in obj._sumtype_argspec)
+
+
+def _get_constructors(klass):
+    for k, v in vars(klass).items():
+        if type(v) is _Constructor:
+            yield k, v
 
 
 def sumtype(klass):
@@ -73,22 +93,116 @@ def sumtype(klass):
     against that.
     """
     def __repr__(inst):
-        return "<%s.%s %r>" % (klass.__name__,
-                               inst.constructor.name,
-                               inst.value)
+        return "<%s.%s%r>" % (klass.__name__,
+                              type(inst).__name__,
+                              tuple(_get_attrs(inst)))
     klass.__repr__ = __repr__
 
     def __eq__(inst, other):
-        return (inst.constructor is other.constructor
-                and inst.value == other.value)
+        i1 = _get_attrs(inst)
+        i2 = _get_attrs(other)
+        return (type(inst) is type(other) and _cmp_iterators(i1, i2))
     klass.__eq__ = __eq__
 
     def __ne__(inst, other):
         return not inst == other
     klass.__ne__ = __ne__
 
-    for k, v in vars(klass).items():
-        if type(v) is constructor:
-            v.set_klass(klass)
-            v.set_name(k)
+    constructor_names = []
+    for cname, constructor in _get_constructors(klass):
+        new_constructor = _make_constructor(cname, klass, constructor._func,
+                                            constructor._argspec)
+        setattr(klass, cname, new_constructor)
+        constructor_names.append(cname)
+    klass._sumtype_constructor_names = constructor_names
     return klass
+
+
+def _make_constructor(name, type_, func, argspec):
+    """Create a type specific to the constructor."""
+    def init(self, *args):
+        if func is not None:
+            result = func(*args)
+        else:
+            result = args
+
+        if argspec is not None:
+            for name, value in zip(argspec, result):
+                setattr(self, name, value)
+
+    return type(name, (type_,), {'__init__': init,
+                                 '_sumtype_argspec': argspec})
+
+
+class PartialMatchError(Exception):
+    """Raised when a match function doesn't cover all cases."""
+    def __init__(self, unhandled_cases):
+        self.unhandled_cases = unhandled_cases
+
+    def __str__(self):
+        return "Unhandled cases: %r" % (self.unhandled_cases,)
+
+
+def match(adt):
+    """
+    A class decorator that lets you write functions over all the constructors
+    of a sum type. You provide the cases by naming the methods of the class the
+    same as the constructors of the type, and the appropriate one will be
+    called based on the way the value was constructed.
+
+    e.g.::
+
+        @sumtype
+        class MyType(object):
+            @constructor(['name', 'num'])
+            def NamedNum(name, num):
+                return (name, num)
+            @constructor(['num'])
+            def AnonymousNum(num):
+                return num
+
+        @match(MyType)
+        class get_num(object):
+            def NamedNum(name, num): return num
+            def AnonymousNum(num): return num
+
+        assert get_num(MyType.NamedNum('foo', 1)) == 1
+        assert get_num(MyType.AnonymousNum(2)) == 2
+
+    If not all constructors are handled, :obj:`PartialMatchError` will be
+    raised.
+    """
+    def matchit(klass):
+        constructor_names = set(adt._sumtype_constructor_names)
+        unhandled = constructor_names - set(dir(klass))
+        if unhandled:
+            raise PartialMatchError(unhandled)
+        return _matchit(klass)
+    return matchit
+
+
+def _matchit(klass):
+    def run(value):
+        constructor_type = type(value)
+        cname = constructor_type.__name__
+        handler = getattr(klass, cname, None)
+        if handler is None:
+            raise PartialMatchError([cname])
+        case = getattr(klass, cname).im_func
+        args = _get_attrs(value)
+        return case(*args)
+
+    if hasattr(klass, '__name__'):
+        run.__name__ = klass.__name__
+    if hasattr(klass, '__doc__'):
+        run.__doc__ = klass.__doc__
+    return run
+
+
+def match_partial(adt):
+    """
+    Like :func:`match`, but it allows not covering all the constructor cases.
+
+    In the case that
+    """
+    return _matchit
