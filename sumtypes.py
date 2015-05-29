@@ -11,11 +11,7 @@ Decorate your classes to make them a sum type::
 
         # you can also use `constructor` as a decorator to write initializers /
         # validators, which must return tuples corresponding to the arguments
-        @constructor('x', 'y')
-        def AnotherConstructor(x, y):
-            assert type(x) is str
-            assert type(y) is int
-            return (x, y)
+        AnotherConstructor = constructor('x', 'y')
 
 Then construct them by calling the constructors::
 
@@ -57,6 +53,8 @@ cases of a sum type::
 
 import sys
 
+import attr
+
 PY3 = sys.version_info[0] == 3
 
 try:
@@ -65,9 +63,23 @@ except ImportError:
     from itertools import zip_longest as izip_longest
 
 
+def attrib(name, *args, **kwargs):
+    """
+    Specify an attribute with extra behavior.
+
+    This is just a simple wrapper around ``attr.ib`` from the ``attribs``
+    package, to allow specifying a name along with the attribute.
+
+    :param name: The name of the attribute
+    :param args: As per the ``attrib`` function from the ``attribs`` package.
+    :param kwargs: As per the ``attrib`` function from the ``attribs`` package.
+    """
+    return (name, attr.ib(*args, **kwargs))
+
+
 class _Constructor(object):
-    def __init__(self, argspec):
-        self._argspec = argspec
+    def __init__(self, attrs):
+        self._attrs = attrs
         self._func = None
 
     def __call__(self, func):
@@ -77,10 +89,14 @@ class _Constructor(object):
 
 def constructor(*argspec):
     """
-    A wrapper/decorator to indicate that some callable is a constructor for the
-    sum type that it's attached to.
+    Register a constructor for the parent sum type.
+
+    :param argspec: each argument should be either a simple string indicating
+    the name of an attribute, or the result of :func:`attrib`.
     """
-    return _Constructor(argspec)
+    attrs = [(ib, attr.ib()) if not isinstance(ib, tuple) else ib
+             for ib in argspec]
+    return _Constructor(attrs)
 
 
 def _cmp_iterators(i1, i2):
@@ -89,9 +105,7 @@ def _cmp_iterators(i1, i2):
 
 
 def _get_attrs(obj):
-    if not obj._sumtype_argspec:
-        return ()
-    return (getattr(obj, attr) for attr in obj._sumtype_argspec)
+    return (getattr(obj, attr[0]) for attr in obj._sumtype_attribs)
 
 
 def _get_constructors(klass):
@@ -111,53 +125,32 @@ def sumtype(klass):
     make something a sum type *and* have an ``__init__``, so I recommend
     against that.
     """
-    def __repr__(inst):
-        return "<%s.%s%r>" % (klass.__name__,
-                              type(inst).__name__,
-                              tuple(_get_attrs(inst)))
-    klass.__repr__ = __repr__
-
-    def __eq__(inst, other):
-        i1 = _get_attrs(inst)
-        i2 = _get_attrs(other)
-        return (type(inst) is type(other) and _cmp_iterators(i1, i2))
-    klass.__eq__ = __eq__
-
-    def __ne__(inst, other):
-        return not inst == other
-    klass.__ne__ = __ne__
-
-    def __hash__(inst):
-        # It's okay that the type isn't considered here, because dict lookups
-        # also check equality, and equality checks the type.
-        return hash(tuple(_get_attrs(inst)))
-
-    klass.__hash__ = __hash__
-
     constructor_names = []
     for cname, constructor in _get_constructors(klass):
         new_constructor = _make_constructor(cname, klass, constructor._func,
-                                            constructor._argspec)
+                                            constructor._attrs)
         setattr(klass, cname, new_constructor)
         constructor_names.append(cname)
     klass._sumtype_constructor_names = constructor_names
     return klass
 
 
-def _make_constructor(name, type_, func, argspec):
+def _make_constructor(name, type_, func, attrs):
     """Create a type specific to the constructor."""
-    def init(self, *args):
-        if func is not None:
-            result = func(*args)
-        else:
-            result = args
-
-        if argspec is not None:
-            for name, value in zip(argspec, result):
-                setattr(self, name, value)
-
-    return type(name, (type_,), {'__init__': init,
-                                 '_sumtype_argspec': argspec})
+    # We override the repr so that the main type is shown
+    def __repr__(inst):
+        attrs_with_repr = tuple(getattr(inst, attr[0])
+                                for attr in inst._sumtype_attribs
+                                if attr[1].repr)
+        return "<%s.%s%r>" % (type_.__name__,
+                              name,
+                              attrs_with_repr)
+    d = dict(attrs)
+    d['_sumtype_attribs'] = [x for x in attrs]
+    t = type(name, (type_,), d)
+    t = attr.s(t)
+    t.__repr__ = __repr__
+    return t
 
 
 class PartialMatchError(Exception):

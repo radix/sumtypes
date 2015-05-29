@@ -2,19 +2,22 @@
 
 from pytest import fixture, raises
 
+import attr
+
 from sumtypes import (
-    PartialMatchError, constructor, match, match_partial, sumtype)
+    PartialMatchError, attrib, constructor, match, match_partial, sumtype)
 
 
 @sumtype
 class MyType(object):
     MyConstructor = constructor('x')
+    AnotherConstructor = constructor('x', 'y')
 
-    @constructor('x', 'y')
-    def AnotherConstructor(x, y):
-        assert type(x) is str
-        assert type(y) is int
-        return (x, y)
+
+@sumtype
+class AttrsType(object):
+    A = constructor(attrib('x', validator=attr.validators.instance_of(int)),
+                    attrib('y', validator=attr.validators.instance_of(str)))
 
 
 @fixture
@@ -115,30 +118,12 @@ def test_partial_match_delayed_error(values):
         get_partial_value(v2)
 
 
-def test_arity_mismatch():
-    """
-    Constructor functions must return a tuple with the same number of elements
-    as the argument spec.
-    """
-    @sumtype
-    class BadType(object):
-        @constructor('x', 'y')
-        def BadConstructor(x, y):
-            return x
-
-    with raises(TypeError):
-        BadType.BadConstructor(1, 2)
-
-
 def test_nullary_constructor():
     """Constructors don't need to have arguments."""
     @sumtype
     class List(object):
         Nil = constructor()
-
-        @constructor('head', 'tail')
-        def Cons(head, tail):
-            return (head, tail)
+        Cons = constructor('head', 'tail')
 
     l = List.Cons(1, List.Nil())
     assert l == List.Cons(1, List.Nil())
@@ -171,3 +156,22 @@ def test_hash_counts_constructor():
         Nil2 = constructor()
 
     assert T.Nil2() not in {T.Nil(): 'foo'}
+
+
+def test_attrs():
+    a = AttrsType.A(x=1, y='foo')
+    assert a.x == 1
+    assert a.y == 'foo'
+
+
+def test_honor_attrs_repr_flag():
+    """
+    If the `repr=False` parameter is passed to an attrib, it will be honored by
+    our custom __repr__ code.
+    """
+
+    @sumtype
+    class T(object):
+        X = constructor(attrib('val', repr=False))
+
+    assert repr(T.X(3)) == '<T.X()>'
