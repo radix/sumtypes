@@ -73,7 +73,7 @@ cases of a sum type:
 
 .. code:: python
 
-    @match
+    @match(MyType)
     class get_number(object):
         def MyConstructor(x): return x
         def AnotherConstructor(x, y): return y

@@ -49,7 +49,7 @@ And the tagged objects support equality::
 Simple pattern matching is also supported. To write a function over all the
 cases of a sum type::
 
-    @match
+    @match(MyType)
     class get_number(object):
         def MyConstructor(x): return x
         def AnotherConstructor(x, y): return y
