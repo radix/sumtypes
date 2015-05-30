@@ -4,7 +4,8 @@ import setuptools
 setuptools.setup(
     name="sumtypes",
     version="0.1a3",
-    description="Sum Types, aka Tagged Unions, for Python",
+    description="Algebraic types for Python (notably providing Sum Types, aka "
+                "Tagged Unions)",
     long_description=open('README.rst').read(),
     url="http://github.com/radix/sumtypes/",
     author="Christopher Armstrong",
