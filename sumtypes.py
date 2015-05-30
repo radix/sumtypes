@@ -1,6 +1,4 @@
 """
-Sum Types (aka Tagged Unions) for Python.
-
 Decorate your classes to make them a sum type::
 
     @sumtype
