@@ -79,6 +79,18 @@ def test_match(values):
     assert get_value(v2) == 1
 
 
+def test_match_default(values):
+    v, v2 = values
+
+    @match(MyType)
+    class get_value(object):
+        def MyConstructor(x): return x
+        def _(value): return value
+
+    assert get_value(v) == 3
+    assert get_value(v2) == v2
+
+
 def test_partial_match_error():
     """
     :obj:`PartialMatchError` is raised if a @match doesn't cover all cases.

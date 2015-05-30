@@ -162,19 +162,26 @@ def match(adt):
 
         @match(MyType)
         class get_num(object):
-            def NamedNum(name, num): return num
+            def NamedNum(_, num): return num
             def AnonymousNum(num): return num
 
         assert get_num(MyType.NamedNum('foo', 1)) == 1
         assert get_num(MyType.AnonymousNum(2)) == 2
 
     If not all constructors are handled, :obj:`PartialMatchError` will be
-    raised.
+    raised. However, a default case can be implemented by defining a method
+    named ``_``, and it will be passed the value::
+
+        @match(MyType)
+        class get_name(object):
+            def NamedNum(name, _): return name
+            def _(_): return 'default'
     """
     def matchit(klass):
+        klass_attrs = set(dir(klass))
         constructor_names = set(adt._sumtype_constructor_names)
-        unhandled = constructor_names - set(dir(klass))
-        if unhandled:
+        unhandled = constructor_names - klass_attrs
+        if unhandled and '_' not in klass_attrs:
             raise PartialMatchError(unhandled)
         return _matchit(klass)
     return matchit
@@ -183,15 +190,19 @@ def match(adt):
 def _matchit(klass):
     def run(value):
         constructor_type = type(value)
+        args = _get_attrs(value)
         cname = constructor_type.__name__
         handler = getattr(klass, cname, None)
         if handler is None:
-            raise PartialMatchError([cname])
+            handler = getattr(klass, '_', None)
+            if handler is None:
+                raise PartialMatchError([cname])
+            else:
+                args = [value]
         if PY3:
             case = handler
         else:
             case = handler.im_func
-        args = _get_attrs(value)
         return case(*args)
 
     if hasattr(klass, '__name__'):
