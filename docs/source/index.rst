@@ -1,5 +1,6 @@
 sumtypes
 ========
+
 sumtypes provides Sum Types (aka Tagged Unions) for Python.
 
 API
