@@ -4,10 +4,19 @@ sumtypes
 .. image:: https://travis-ci.org/radix/sumtypes.svg?branch=master
     :target: https://travis-ci.org/radix/sumtypes
 
-Sum Types (aka `Tagged Unions`_) for Python. Documentation is at
-https://sumtypes.readthedocs.org/
+sumtypes provides Algebraic Data Types for Python. The main benefit is the
+implementation of Sum Types (aka `Tagged Unions`_), which Python doesn't have
+any native representation for. Product Types are just objects with multiple
+attributes.
 
 .. _`Tagged Unions`: http://en.wikipedia.org/wiki/Tagged_union
+
+Documentation is at https://sumtypes.readthedocs.org/
+
+This module uses the `attrs`_ library to provide features like attribute
+validation and defaults.
+
+.. _`attrs`: http://pypi.python.org/pypi/attrs
 
 Example
 =======
@@ -15,6 +24,9 @@ Example
 Decorate your classes to make them a sum type:
 
 .. code:: python
+
+    import attr
+    from sumtypes import sumtype, match
 
     @sumtype
     class MyType(object):

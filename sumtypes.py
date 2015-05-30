@@ -1,6 +1,9 @@
 """
 Decorate your classes to make them a sum type::
 
+    import attr
+    from sumtypes import sumtype, match
+
     @sumtype
     class MyType(object):
         # constructors specify names for their arguments
