@@ -16,8 +16,8 @@ class MyType(object):
 
 @sumtype
 class AttrsType(object):
-    A = constructor(('x', attr.ib(validator=attr.validators.instance_of(int))),
-                    ('y', attr.ib(validator=attr.validators.instance_of(str))))
+    A = constructor(x=attr.ib(validator=attr.validators.instance_of(int)),
+                    y=attr.ib(validator=attr.validators.instance_of(str)))
 
 
 @fixture
@@ -176,14 +176,6 @@ def test_attrs():
     assert a.y == 'foo'
 
 
-def test_honor_attrs_repr_flag():
-    """
-    If the `repr=False` parameter is passed to an attrib, it will be honored by
-    our custom __repr__ code.
-    """
-
-    @sumtype
-    class T(object):
-        X = constructor(('val', attr.ib(repr=False)))
-
-    assert repr(T.X(3)) == 'T.X()'
+def test_attrs_positional():
+    a = AttrsType.A(1, 'foo')
+    assert a == AttrsType.A(x=1, y='foo')

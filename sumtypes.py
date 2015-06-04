@@ -77,7 +77,7 @@ class _Constructor(object):
         self._attrs = attrs
 
 
-def constructor(*argspec):
+def constructor(*argspec, **kwargs):
     """
     Register a constructor for the parent sum type.
 
@@ -88,8 +88,13 @@ def constructor(*argspec):
     .. _`attr.ib`:
        http://attrs.readthedocs.org/en/stable/api.html#attr.ib
     """
-    attrs = [(ib, attr.ib()) if not isinstance(ib, tuple) else ib
-             for ib in argspec]
+    if kwargs and argspec:
+        raise TypeError(
+            "Please only use positional or keyword arguments in constructors")
+    if kwargs:
+        attrs = sorted(list(kwargs.items()), key=lambda item: item[1].counter)
+    else:
+        attrs = [(name, attr.ib()) for name in argspec]
     return _Constructor(attrs)
 
 
