@@ -37,8 +37,8 @@ Decorate your classes to make them a sum type:
         # You can also make use of any feature of the attrs
         # package by using attr.ib in constructors
         ThirdConstructor = constructor(
-            ('one', attr.ib(default=42)),
-            ('two', attr.ib(validator=attr.validators.instance_of(int))))
+            one=attr.ib(default=42),
+            two=attr.ib(validator=attr.validators.instance_of(int)))
 
 (`attrs package`_, and `attr.ib documentation`_)
 

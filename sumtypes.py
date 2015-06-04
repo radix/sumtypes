@@ -13,8 +13,8 @@ Decorate your classes to make them a sum type::
         # You can also make use of any feature of the attrs
         # package by using attr.ib in constructors
         ThirdConstructor = constructor(
-            ('one', attr.ib(default=42)),
-            ('two', attr.ib(validator=attr.validators.instance_of(int))))
+            one=attr.ib(default=42),
+            two=attr.ib(validator=attr.validators.instance_of(int)))
 
 (`attrs package`_, and `attr.ib documentation`_)
 
@@ -77,24 +77,27 @@ class _Constructor(object):
         self._attrs = attrs
 
 
-def constructor(*argspec, **kwargs):
+def constructor(*attrnames, **attribs):
     """
     Register a constructor for the parent sum type.
 
-    :param argspec: each argument should be either a simple string indicating
-        the name of an attribute, or two-tuples of ``(name, attr.ib(...))``
-        where `attr.ib`_ is from the `attrs package`_.
+    Note that ``*attrnames`` and ``**attribs`` are mutually exclusive.
+
+    :param attrnames: each argument should be either a simple string indicating
+        the name of an attribute
+    :param attribs: variables specified with `attr.ib`_ instances, from the
+        `attrs package`_.
 
     .. _`attr.ib`:
        http://attrs.readthedocs.org/en/stable/api.html#attr.ib
     """
-    if kwargs and argspec:
+    if attribs and attrnames:
         raise TypeError(
             "Please only use positional or keyword arguments in constructors")
-    if kwargs:
-        attrs = sorted(list(kwargs.items()), key=lambda item: item[1].counter)
+    if attribs:
+        attrs = sorted(list(attribs.items()), key=lambda item: item[1].counter)
     else:
-        attrs = [(name, attr.ib()) for name in argspec]
+        attrs = [(name, attr.ib()) for name in attrnames]
     return _Constructor(attrs)
 
 
