@@ -89,6 +89,10 @@ cases of a sum type:
     class get_number(object):
         def MyConstructor(x): return x
         def AnotherConstructor(x, y): return y
+        def ThirdConstructor(one, two): return one + two
+
+    assert get_number(v) == 1
+    assert get_number(v2) == 2
 
 ``match`` ensures that all cases are handled. If you really want to write a
 'partial function' (i.e. one that doesn't cover all cases), use
