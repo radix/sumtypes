@@ -26,7 +26,7 @@ Decorate your classes to make them a sum type:
 .. code:: python
 
     import attr
-    from sumtypes import sumtype, match
+    from sumtypes import sumtype, constructor, match
 
     @sumtype
     class MyType(object):

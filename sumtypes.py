@@ -2,7 +2,7 @@
 Decorate your classes to make them a sum type::
 
     import attr
-    from sumtypes import sumtype, match
+    from sumtypes import sumtype, constructor, match
 
     @sumtype
     class MyType(object):
