@@ -1,5 +1,5 @@
 lint:
-	flake8 --ignore=E131,E731,W503,E701,E301 *.py
+	flake8 --ignore=E131,E731,W503,E701,E301,E704 *.py
 
 build-dist:
 	rm -rf dist

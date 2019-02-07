@@ -136,10 +136,13 @@ def sumtype(*args, **kwargs):
     else:
         return lambda klass: _real_decorator(klass, kwargs)
 
+
 def _real_decorator(klass, kwargs):
     constructor_names = []
     for cname, constructor in _get_constructors(klass):
-        new_constructor = _make_constructor(cname, klass, constructor._attrs, kwargs)
+        new_constructor = _make_constructor(
+            cname, klass, constructor._attrs, kwargs
+        )
         setattr(klass, cname, new_constructor)
         constructor_names.append(cname)
     klass._sumtype_constructor_names = constructor_names

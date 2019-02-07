@@ -137,8 +137,8 @@ def test_nullary_constructor():
         Nil = constructor()
         Cons = constructor('head', 'tail')
 
-    l = List.Cons(1, List.Nil())
-    assert l == List.Cons(1, List.Nil())
+    li = List.Cons(1, List.Nil())
+    assert li == List.Cons(1, List.Nil())
 
 
 def test_no_conversion_constructors():
@@ -148,8 +148,8 @@ def test_no_conversion_constructors():
         Nil = constructor()
         Cons = constructor('head', 'tail')
 
-    l = List.Cons(1, List.Nil())
-    assert l == List.Cons(1, List.Nil())
+    li = List.Cons(1, List.Nil())
+    assert li == List.Cons(1, List.Nil())
 
 
 def test_hash():
