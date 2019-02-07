@@ -64,16 +64,17 @@ cases of a sum type::
 :func:`match_partial`.
 """
 
-import sys
-
-import attr
-
-PY3 = sys.version_info[0] == 3
-
+from contextlib import contextmanager
 try:
     from itertools import izip_longest
 except ImportError:
     from itertools import zip_longest as izip_longest
+import sys
+
+import attr
+
+
+PY3 = sys.version_info[0] == 3
 
 
 class _Constructor(object):
@@ -124,12 +125,10 @@ def sumtype(*args, **kwargs):
     """
     A class decorator that treats the class like a sum type.
 
-    Constructors should be wrapped/decorated with :obj:`constructor`.
+    Constructors should be declared with :obj:`constructor`.
 
-    Note that this will overwrite ``__repr__``, ``__eq__``, and ``__ne__`` on
-    your objects. ``__init__`` is untouched, but it would be kind of weird to
-    make something a sum type *and* have an ``__init__``, so I recommend
-    against that.
+    The `sumtype` decorator implies the :obj:`attr.s` decorator. All keyword
+    arguments are passed on to :obj:`attr.s`.
     """
     if len(args) == 1 and len(kwargs) == 0 and type(args[0] is type):
         return _real_decorator(args[0], {})
@@ -138,18 +137,23 @@ def sumtype(*args, **kwargs):
 
 def _real_decorator(klass, kwargs):
     constructor_names = []
-    for cname, constructor in _get_constructors(klass):
+    constructors = []
+    all_constructors = list(_get_constructors(klass))
+    for cname, constructor in all_constructors:
         new_constructor = _make_constructor(cname, klass, constructor._attrs, kwargs)
+        # TODO: new_constructor.__name__ = klass.__name__ + '.' + cname
         setattr(klass, cname, new_constructor)
         constructor_names.append(cname)
+        constructors.append(new_constructor)
     klass._sumtype_constructor_names = constructor_names
+    klass._sumtype_constructors = constructors
     return klass
-
 
 def _make_constructor(name, type_, attrs, kwargs):
     """Create a type specific to the constructor."""
     d = dict(attrs)
     d['_sumtype_attribs'] = [x for x in attrs]
+    d['_sumtype_type'] = type_
     t = type(name, (type_,), d)
     t = attr.s(t, repr_ns=type_.__name__, **kwargs)
     return t
@@ -237,3 +241,35 @@ def match_partial(adt):
     In the case that
     """
     return _matchit
+
+
+@attr.s
+class _Matcher(object):
+    obj = attr.ib()
+    type = attr.ib(default=None)
+    matched = attr.ib(factory=list)
+
+    def case(self, constructor):
+        if self.type is None:
+            self.type = constructor._sumtype_type
+        elif self.type is not constructor._sumtype_type:
+            raise Exception("Can only match one type per match-statement")
+        self.matched.append(constructor)
+        if isinstance(self.obj, constructor):
+            self.__dict__.update(self.obj.__dict__)
+            return True
+        return False
+
+@contextmanager
+def with_match(obj):
+    """
+    A context manager that can be used to match values::
+
+        with with_match(v):
+            if v.case(MyType.MyConstructor):
+                print v.attr
+
+    This syntax does not perform exhaustiveness checking.
+    """
+    matcher = _Matcher(obj)
+    yield matcher

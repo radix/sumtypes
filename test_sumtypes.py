@@ -5,7 +5,9 @@ from pytest import fixture, raises
 import attr
 
 from sumtypes import (
-    PartialMatchError, constructor, match, match_partial, sumtype)
+    PartialMatchError, constructor, match, match_partial, sumtype,
+    with_match
+)
 
 
 @sumtype(frozen=True)
@@ -62,6 +64,17 @@ def test_equality(values):
     assert not v2 != MyType.AnotherConstructor('something', 1)
     assert not v == MyType.AnotherConstructor('othering', 2)
 
+
+def test_with_match(values):
+    v, v2 = values
+    def get_value(v):
+        with with_match(v) as v:
+            if v.case(MyType.MyConstructor):
+                return v.x
+            if v.case(MyType.AnotherConstructor):
+                return v.y
+    assert get_value(v) == 3
+    assert get_value(v2) == 1
 
 def test_match(values):
     """@match allows writing functions over all the cases of an ADT."""
@@ -179,3 +192,5 @@ def test_attrs():
 def test_attrs_positional():
     a = AttrsType.A(1, 'foo')
     assert a == AttrsType.A(x=1, y='foo')
+
+
