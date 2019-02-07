@@ -8,7 +8,7 @@ from sumtypes import (
     PartialMatchError, constructor, match, match_partial, sumtype)
 
 
-@sumtype
+@sumtype(frozen=True)
 class MyType(object):
     MyConstructor = constructor('x')
     AnotherConstructor = constructor('x', 'y')
@@ -162,7 +162,7 @@ def test_hash_counts_constructor():
     Different values of the same type but same underlying representation do not
     count as equivalent in dicts.
     """
-    @sumtype
+    @sumtype(frozen=True)
     class T(object):
         Nil = constructor()
         Nil2 = constructor()

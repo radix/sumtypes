@@ -97,7 +97,7 @@ def constructor(*attrnames, **attribs):
     """
     if attribs and attrnames:
         raise TypeError(
-            "Please only use positional or keyword arguments in constructors")
+            "Can't mix positional and keyword arguments in constructors")
     if attribs:
         attrs = sorted(list(attribs.items()), key=lambda item: item[1].counter)
     else:
@@ -120,7 +120,7 @@ def _get_constructors(klass):
             yield k, v
 
 
-def sumtype(klass):
+def sumtype(*args, **kwargs):
     """
     A class decorator that treats the class like a sum type.
 
@@ -131,21 +131,27 @@ def sumtype(klass):
     make something a sum type *and* have an ``__init__``, so I recommend
     against that.
     """
+    if len(args) == 1 and len(kwargs) == 0 and type(args[0] is type):
+        return _real_decorator(args[0], {})
+    else:
+        return lambda klass: _real_decorator(klass, kwargs)
+
+def _real_decorator(klass, kwargs):
     constructor_names = []
     for cname, constructor in _get_constructors(klass):
-        new_constructor = _make_constructor(cname, klass, constructor._attrs)
+        new_constructor = _make_constructor(cname, klass, constructor._attrs, kwargs)
         setattr(klass, cname, new_constructor)
         constructor_names.append(cname)
     klass._sumtype_constructor_names = constructor_names
     return klass
 
 
-def _make_constructor(name, type_, attrs):
+def _make_constructor(name, type_, attrs, kwargs):
     """Create a type specific to the constructor."""
     d = dict(attrs)
     d['_sumtype_attribs'] = [x for x in attrs]
     t = type(name, (type_,), d)
-    t = attr.s(t, repr_ns=type_.__name__)
+    t = attr.s(t, repr_ns=type_.__name__, **kwargs)
     return t
 
 
