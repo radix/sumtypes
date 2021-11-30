@@ -1,9 +1,6 @@
 sumtypes
 ========
 
-.. image:: https://travis-ci.org/radix/sumtypes.svg?branch=master
-    :target: https://travis-ci.org/radix/sumtypes
-
 sumtypes provides Algebraic Data Types for Python. The main benefit is the
 implementation of Sum Types (aka `Tagged Unions`_), which Python doesn't have
 any native representation for. Product Types are just objects with multiple
