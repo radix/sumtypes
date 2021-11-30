@@ -116,10 +116,3 @@ programming in Python has exploded. Here are some libraries I recommend:
 .. _`fn.py`: https://pypi.python.org/pypi/fn
 
 
-Thanks
-======
-
-Thanks to Rackspace for allowing me to work on this project, and having an
-*excellent* `open source employee contribution policy`_
-
-.. _`open source employee contribution policy`: https://www.rackspace.com/blog/rackspaces-policy-on-contributing-to-open-source/
