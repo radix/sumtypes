@@ -115,7 +115,7 @@ def _get_attrs(obj):
 
 
 def _get_constructors(klass):
-    for k, v in vars(klass).items():
+    for k, v in list(vars(klass).items()):
         if type(v) is _Constructor:
             yield k, v
 
